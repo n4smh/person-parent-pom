@@ -13,15 +13,25 @@
 
 	<groupId>in.n4smh.microservices</groupId>
 	<artifactId>parent</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2-SNAPSHOT</version>
 	<name>app-parent</name>
-	<description>Demo project for Spring Boot</description>
 
 	<packaging>pom</packaging>
 
 	<properties>
 		<java.version>21</java.version>
+
+		<nexus-maven-host>localhost:8081</nexus-maven-host>
+		<nexus-docker-host>localhost:8082</nexus-docker-host>
+		<nexus-release-url>http://${nexus-maven-host}/repository/maven-releases/</nexus-release-url>
+		<nexus-snapshot-url>http://${nexus-maven-host}/repository/maven-snapshots/</nexus-snapshot-url>
+		<nexus-docker-path>${nexus-docker-host}/docker-hosted/</nexus-docker-path>
+		
+		<nexus-ci-user>ci_user</nexus-ci-user>
+		<nexus-ci-password>asdf1234</nexus-ci-password>
+		
 		<opentelemetry-logback-appender.version>2.24.0-alpha</opentelemetry-logback-appender.version>
+		<springdoc-openapi.version>3.0.1</springdoc-openapi.version>
 	</properties>
 
 	<dependencies>
@@ -45,23 +55,45 @@
 			<artifactId>commons-lang3</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-opentelemetry</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.opentelemetry.instrumentation</groupId>
-			<artifactId>opentelemetry-logback-appender-1.0</artifactId>
-			<version>${opentelemetry-logback-appender.version}</version>
-		</dependency>
-
 	</dependencies>
+
+	<distributionManagement>
+		<repository>
+			<id>nexus-releases</id>
+			<url>${nexus-release-url}</url>
+		</repository>
+		<snapshotRepository>
+			<id>nexus-snapshots</id>
+			<url>${nexus-snapshot-url}</url>
+		</snapshotRepository>
+	</distributionManagement>
 
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>build-info</goal>
+						</goals>
+						<configuration>
+							<additionalProperties>
+								<properties.nexus-maven-host>${nexus-maven-host}</properties.nexus-maven-host>
+								<properties.nexus-docker-host>${nexus-docker-host}</properties.nexus-docker-host>
+								<properties.nexus-release-url>${nexus-release-url}</properties.nexus-release-url>
+								<properties.nexus-snapshot-url>${nexus-snapshot-url}</properties.nexus-snapshot-url>
+								<properties.nexus-docker-path>${nexus-docker-path}</properties.nexus-docker-path>
+
+								<properties.version.java>${java.version}</properties.version.java>
+								<properties.version.opentelemetry-logback-appender>${opentelemetry-logback-appender.version}</properties.version.opentelemetry-logback-appender>
+								<properties.version.springdoc-openapi>${springdoc-openapi.version}</properties.version.springdoc-openapi>
+							</additionalProperties>
+							<excludeInfoProperties>time</excludeInfoProperties>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
