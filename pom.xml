@@ -12,9 +12,9 @@
 	</parent>
 
 	<groupId>in.n4smh.microservices</groupId>
-	<artifactId>parent</artifactId>
-	<version>0.0.2-SNAPSHOT</version>
-	<name>app-parent</name>
+	<artifactId>parent-pom</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>ParentPOM</name>
 
 	<packaging>pom</packaging>
 
@@ -32,6 +32,7 @@
 		
 		<opentelemetry-logback-appender.version>2.24.0-alpha</opentelemetry-logback-appender.version>
 		<springdoc-openapi.version>3.0.1</springdoc-openapi.version>
+		<spring-cloud.version>2025.1.0</spring-cloud.version>
 	</properties>
 
 	<dependencies>
@@ -56,6 +57,18 @@
 		</dependency>
 
 	</dependencies>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>${spring-cloud.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<distributionManagement>
 		<repository>
@@ -89,6 +102,7 @@
 								<properties.version.java>${java.version}</properties.version.java>
 								<properties.version.opentelemetry-logback-appender>${opentelemetry-logback-appender.version}</properties.version.opentelemetry-logback-appender>
 								<properties.version.springdoc-openapi>${springdoc-openapi.version}</properties.version.springdoc-openapi>
+								<properties.version.spring-cloud>${spring-cloud.version}</properties.version.spring-cloud>
 							</additionalProperties>
 							<excludeInfoProperties>time</excludeInfoProperties>
 						</configuration>
