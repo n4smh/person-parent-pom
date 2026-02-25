@@ -32,7 +32,12 @@
 		
 		<opentelemetry-logback-appender.version>2.24.0-alpha</opentelemetry-logback-appender.version>
 		<springdoc-openapi.version>3.0.1</springdoc-openapi.version>
-		<spring-cloud.version>2025.1.0</spring-cloud.version>
+		<spring-cloud.version>2025.1.1</spring-cloud.version>
+		<ossindex-maven-plugin.version>3.1.0</ossindex-maven-plugin.version>
+		
+		
+		<!-- Version override to fix vulnerabilities -->
+		
 	</properties>
 
 	<dependencies>
@@ -55,7 +60,15 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 		</dependency>
+		
+		<!-- Start: Version override to fix vulnerabilities -->
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<version>3.27.7</version>
+		</dependency>
 
+		<!-- End -->
 	</dependencies>
 
 	<dependencyManagement>
@@ -86,6 +99,19 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>					
+					<image>
+						<name>${nexus-docker-path}${project.artifactId}:${project.version}</name>
+						<publish>true</publish>
+					</image>
+					<docker>
+						<builderRegistry>
+							<username>${nexus-ci-user}</username>
+							<password>${nexus-ci-password}</password>
+							<url>${nexus-docker-host}</url>
+						</builderRegistry>
+					</docker>
+				</configuration>
 				<executions>
 					<execution>
 						<goals>
@@ -93,19 +119,35 @@
 						</goals>
 						<configuration>
 							<additionalProperties>
-								<properties.nexus-maven-host>${nexus-maven-host}</properties.nexus-maven-host>
-								<properties.nexus-docker-host>${nexus-docker-host}</properties.nexus-docker-host>
-								<properties.nexus-release-url>${nexus-release-url}</properties.nexus-release-url>
-								<properties.nexus-snapshot-url>${nexus-snapshot-url}</properties.nexus-snapshot-url>
-								<properties.nexus-docker-path>${nexus-docker-path}</properties.nexus-docker-path>
-
 								<properties.version.java>${java.version}</properties.version.java>
 								<properties.version.opentelemetry-logback-appender>${opentelemetry-logback-appender.version}</properties.version.opentelemetry-logback-appender>
 								<properties.version.springdoc-openapi>${springdoc-openapi.version}</properties.version.springdoc-openapi>
 								<properties.version.spring-cloud>${spring-cloud.version}</properties.version.spring-cloud>
+								<properties.version.ossindex-maven-plugin>${ossindex-maven-plugin.version}</properties.version.ossindex-maven-plugin>
 							</additionalProperties>
 							<excludeInfoProperties>time</excludeInfoProperties>
 						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.sonatype.ossindex.maven</groupId>
+				<artifactId>ossindex-maven-plugin</artifactId>
+				<version>${ossindex-maven-plugin.version}</version>
+				<configuration>
+					<authId>ossindex</authId>
+					<reportFile>${project.build.directory}/ossindex-report.json</reportFile>
+					<cvssScoreThreshold>7.0</cvssScoreThreshold>
+					<fail>false</fail>
+				</configuration>
+				<executions>
+					<execution>
+						<id>audit-dependencies</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>audit</goal>
+							<!--<goal>audit-aggregate</goal>-->
+						</goals>
 					</execution>
 				</executions>
 			</plugin>
