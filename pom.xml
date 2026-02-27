@@ -11,14 +11,15 @@
 
 	<groupId>in.n4smh.microservices.person</groupId>
 	<artifactId>parent-pom</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1</version>
 	<name>ParentPOM</name>
 
 	<packaging>pom</packaging>
 
 	<scm>
 		<developerConnection>scm:git:https://github.com/n4smh/person-parent-pom.git</developerConnection>
-	</scm>
+	  <tag>parent-pom-0.0.1</tag>
+  </scm>
 	
 	<properties>
 		<java.version>21</java.version>
