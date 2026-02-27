@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.0.2</version>
+		<version>4.0.3</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 
@@ -18,6 +16,10 @@
 
 	<packaging>pom</packaging>
 
+	<scm>
+		<developerConnection>scm:git:https://github.com/n4smh/person-parent-pom.git</developerConnection>
+	</scm>
+	
 	<properties>
 		<java.version>21</java.version>
 
@@ -26,18 +28,18 @@
 		<nexus-release-url>http://${nexus-maven-host}/repository/maven-releases/</nexus-release-url>
 		<nexus-snapshot-url>http://${nexus-maven-host}/repository/maven-snapshots/</nexus-snapshot-url>
 		<nexus-docker-path>${nexus-docker-host}/docker-hosted/</nexus-docker-path>
-		
+
 		<nexus-ci-user>ci_user</nexus-ci-user>
 		<nexus-ci-password>asdf1234</nexus-ci-password>
-		
+
 		<opentelemetry-logback-appender.version>2.24.0-alpha</opentelemetry-logback-appender.version>
 		<springdoc-openapi.version>3.0.1</springdoc-openapi.version>
 		<spring-cloud.version>2025.1.1</spring-cloud.version>
-		<ossindex-maven-plugin.version>3.1.0</ossindex-maven-plugin.version>
-		
+		<dependency-check-maven.version>12.2.0</dependency-check-maven.version>
+		<maven-release-plugin.version>3.3.1</maven-release-plugin.version>
 		
 		<!-- Version override to fix vulnerabilities -->
-		
+
 	</properties>
 
 	<dependencies>
@@ -62,11 +64,6 @@
 		</dependency>
 		
 		<!-- Start: Version override to fix vulnerabilities -->
-		<dependency>
-			<groupId>org.assertj</groupId>
-			<artifactId>assertj-core</artifactId>
-			<version>3.27.7</version>
-		</dependency>
 
 		<!-- End -->
 	</dependencies>
@@ -99,11 +96,12 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<configuration>					
+				<configuration>
 					<image>
 						<name>${nexus-docker-path}${project.artifactId}:${project.version}</name>
 						<publish>true</publish>
 					</image>
+					
 					<docker>
 						<builderRegistry>
 							<username>${nexus-ci-user}</username>
@@ -112,44 +110,55 @@
 						</builderRegistry>
 					</docker>
 				</configuration>
+				
 				<executions>
 					<execution>
 						<goals>
 							<goal>build-info</goal>
 						</goals>
+						
 						<configuration>
 							<additionalProperties>
 								<properties.version.java>${java.version}</properties.version.java>
 								<properties.version.opentelemetry-logback-appender>${opentelemetry-logback-appender.version}</properties.version.opentelemetry-logback-appender>
 								<properties.version.springdoc-openapi>${springdoc-openapi.version}</properties.version.springdoc-openapi>
 								<properties.version.spring-cloud>${spring-cloud.version}</properties.version.spring-cloud>
-								<properties.version.ossindex-maven-plugin>${ossindex-maven-plugin.version}</properties.version.ossindex-maven-plugin>
+								<properties.version.dependency-check-maven>${dependency-check-maven.version}</properties.version.dependency-check-maven>
+								<properties.version.maven-release-plugin>${maven-release-plugin.version}</properties.version.maven-release-plugin>
 							</additionalProperties>
 							<excludeInfoProperties>time</excludeInfoProperties>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
+			
 			<plugin>
-				<groupId>org.sonatype.ossindex.maven</groupId>
-				<artifactId>ossindex-maven-plugin</artifactId>
-				<version>${ossindex-maven-plugin.version}</version>
+				<groupId>org.owasp</groupId>
+				<artifactId>dependency-check-maven</artifactId>
+				<version>${dependency-check-maven.version}</version>
+				
 				<configuration>
-					<authId>ossindex</authId>
-					<reportFile>${project.build.directory}/ossindex-report.json</reportFile>
-					<cvssScoreThreshold>7.0</cvssScoreThreshold>
-					<fail>false</fail>
+					<formats>
+						<format>HTML</format>
+						<format>JSON</format>
+					</formats>
+
+					<nvdApiServerId>nvdApi</nvdApiServerId>
+					<ossIndexServerId>ossindex</ossIndexServerId>
 				</configuration>
 				<executions>
 					<execution>
-						<id>audit-dependencies</id>
-						<phase>validate</phase>
 						<goals>
-							<goal>audit</goal>
-							<!--<goal>audit-aggregate</goal>-->
+							<goal>check</goal>
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>${maven-release-plugin.version}</version>
 			</plugin>
 		</plugins>
 	</build>
